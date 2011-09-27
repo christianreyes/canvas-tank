@@ -81,6 +81,9 @@ Text.inheritsFrom(Drawable);
 
 Text.prototype.draw = function (c) {
     // your draw code here
+    c.fillStyle = this.fill;
+    c.font = this.font;
+    c.fillText(this.content, this.left, this.top);
 };
 
 function Image(attrs) {
