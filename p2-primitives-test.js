@@ -191,7 +191,7 @@ window.onload = function () {
     
     var leftValue = 250;
     for (var i = 0; i < 3; i++) {
-        var cherry = new Image({
+        var cherry = new DoodleImage({
             src: "cherry.jpg",
             left: leftValue,
             top: 310,

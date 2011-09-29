@@ -114,7 +114,7 @@ window.onload = function () {
 	);
 	
 	imgFrame.children.push(
-		new Image({src: "kitty.jpg" })
+		new DoodleImage({src: "kitty.jpg" })
 		);
 	imgFrameFrame.children.push(imgFrame);
     rotContainer1.children.push(rotContainer2);
