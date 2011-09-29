@@ -36,11 +36,11 @@ function Drawable (attrs) {
         visible: true,
         theta: 0
     };
-    this.attrs = mergeWithDefault(attrs, dflt);
-    //this.left = attrs.left;
-    //this.top = attrs.top;
-    //this.visible = attrs.visible;
-    //this.theta = attrs.theta;
+    attrs = mergeWithDefault(attrs, dflt);
+    this.left = attrs.left;
+    this.top = attrs.top;
+    this.visible = attrs.visible;
+    this.theta = attrs.theta;
 }
 
 Drawable.prototype.draw = function() {
@@ -58,8 +58,8 @@ function Primitive(attrs) {
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);
-    //this.lineWidth = attrs.lineWidth;
-    //this.color = attrs.color;
+    this.lineWidth = attrs.lineWidth;
+    this.color = attrs.color;
 }
 Primitive.inheritsFrom(Drawable);
 
@@ -73,10 +73,10 @@ function Text(attrs) {
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);
-    //this.content = attrs.content;
-    //this.fill = attrs.fill;
-    //this.font = attrs.font;
-    //this.height = attrs.height;
+    this.content = attrs.content;
+    this.fill = attrs.fill;
+    this.font = attrs.font;
+    this.height = attrs.height;
     // add constructor code here
 }
 Text.inheritsFrom(Drawable);
@@ -85,7 +85,7 @@ Text.prototype.draw = function (c) {
     // your draw code here
     c.fillStyle = this.fill;
     c.font = this.font;
-    c.fillText(this.content, this.attrs.left, this.attrs.top);
+    c.fillText(this.content, this.left, this.height);
 };
 
 function DoodleImage(attrs) {
@@ -96,16 +96,23 @@ function DoodleImage(attrs) {
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);
+	this.width = attrs.width;
+	this.height = attrs.height;
+	this.src = attrs.src;
 	// rest of constructor code here
 }
 DoodleImage.inheritsFrom(Drawable);
 
 DoodleImage.prototype.draw = function (c) {
     var img = new Image();
+	var l = this.left;
+	var t = this.top;
+	var w = this.width;
+	var h = this.height;
     img.onload = function(){
-        c.drawImage(img,this.left,this.top);
+        c.drawImage(img,l,t,w,h);
     };
-    img.src = this.attrs.src;
+    img.src = this.src;
 };
 
 
@@ -119,6 +126,10 @@ function Line(attrs) {
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
     // your draw code here
+	this.startX = attrs.startX;
+	this.startY = attrs.startY;
+	this.endX = attrs.endX;
+	this.endY = attrs.endY;
 }
 Line.inheritsFrom(Primitive);
 
@@ -126,15 +137,14 @@ Line.prototype.draw = function (c) {
     // your draw code here
     c.beginPath();
 
-    if(typeof(this.attrs.lineWidth) != "undefined"){
-         c.lineWidth = this.attrs.lineWidth;
+    if(typeof(this.lineWidth) != "undefined"){
+         c.lineWidth = this.lineWidth;
     }
-    if(typeof(this.attrs.color) != "undefined"){
-         c.strokeStyle = this.attrs.color;
+    if(typeof(this.color) != "undefined"){
+         c.strokeStyle = this.color;
     }
-
-    c.moveTo(this.attrs.startX,this.attrs.startY);
-    c.lineTo(this.attrs.endX, this.attrs.endY);
+    c.moveTo(this.startX,this.startY);
+    c.lineTo(this.endX, this.endY);
     c.closePath();
     c.stroke();
 };
@@ -147,46 +157,45 @@ function Path(attrs) {
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
     // rest of constructor code here
+	this.type = attrs.type;
+	this.points = attrs.points;
 }
 Path.inheritsFrom(Primitive);
 
 Path.prototype.draw = function (c) {
     // draw code here
     c.beginPath();
-    c.moveTo(this.attrs.points[0].x, this.attrs.points[0].y);
+    c.moveTo(this.points[0].x, this.points[0].y);
     
-    if(typeof(this.attrs.lineWidth) != "undefined"){
-         c.lineWidth = this.attrs.lineWidth;
+    if(typeof(this.lineWidth) != "undefined"){
+         c.lineWidth = this.lineWidth;
     }
-    if(typeof(this.attrs.color) != "undefined"){
-         c.strokeStyle = this.attrs.color;
+    if(typeof(this.color) != "undefined"){
+         c.strokeStyle = this.color;
     }
 
-    switch(this.attrs.type){
+	//c.lineCap = "r";
+    switch(this.type){
         case "straight":
-            for(var i=1;i<this.attrs.points.length;i++){
-                var p = this.attrs.points[i];
+            for(var i=1;i<this.points.length;i++){
+                var p = this.points[i];
                 c.lineTo(p.x, p.y);
-                c.moveTo(p.x, p.y);
             }
             break;
         case "quadratic":
-            for(var i=1;i<this.attrs.points.length;i++){
-                var p = this.attrs.points[i];
+            for(var i=1;i<this.points.length;i++){
+                var p = this.points[i];
                 c.quadraticCurveTo(p.cp1x, p.cp1y, p.x, p.y);
-                c.moveTo(p.x, p.y);
             }
             break;
         case "bezier":
-            for(var i=1;i<this.attrs.points.length;i++){
-                var p = this.attrs.points[i];
+            for(var i=1;i<this.points.length;i++){
+                var p = this.points[i];
                 c.bezierCurveTo(p.cp1x, p.cp1y, p.cp2x, p.cp2y, p.x, p.y);
-                c.moveTo(p.x, p.y);
             }
             break;
     }
     
-    c.closePath();
     c.stroke();
 
 };
@@ -203,6 +212,13 @@ function Arc(attrs) {
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
+	
+	this.centerX = attrs.centerX;
+    this.centerY = attrs.centerY;
+    this.radius = attrs.radius;
+    this.startingTheta = attrs.startingTheta;
+    this.endingTheta = attrs.endingTheta;
+    this.counterclockwise = attrs.counterclockwise;
 	// rest of constructor code here
 }
 Arc.inheritsFrom(Primitive);
@@ -211,15 +227,14 @@ Arc.prototype.draw = function (c) {
     // draw code here
     c.beginPath();
 
-    if(typeof(this.attrs.lineWidth) != "undefined"){
-         c.lineWidth = this.attrs.lineWidth;
+    if(typeof(this.lineWidth) != "undefined"){
+         c.lineWidth = this.lineWidth;
     }
-    if(typeof(this.attrs.color) != "undefined"){
-         c.strokeStyle = this.attrs.color;
+    if(typeof(this.color) != "undefined"){
+         c.strokeStyle = this.color;
     }
 
-    c.arc(this.attrs.centerX,this.attrs.centerY,this.attrs.radius, this.attrs.startingTheta, this.attrs.endingTheta, this.attrs.counterclockwise );
-    //c.closePath();
+    c.arc(this.centerX,this.centerY,this.radius, this.startingTheta, this.endingTheta, this.counterclockwise );
     c.stroke();
 };
 
