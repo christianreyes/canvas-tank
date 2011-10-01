@@ -54,7 +54,7 @@ window.onload = function () {
             { x: 290, y: 100 },
             { x: 210, y: 140 },
             { x: 290, y: 220 },
-            { x: 210, y: 270 },
+            { x: 210, y: 270 }
             ]
     });
     var straightS = new Path({
@@ -65,7 +65,7 @@ window.onload = function () {
             { x: 290, y: 100 },
             { x: 210, y: 140 },
             { x: 290, y: 220 },
-            { x: 210, y: 270 },
+            { x: 210, y: 270 }
             ]
     });
     doodle.children.push(straightSbg);
