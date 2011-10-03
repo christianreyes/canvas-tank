@@ -257,8 +257,8 @@ function Container(attrs) {
     this.width = attrs.width;
     this.height = attrs.height;
     this.fill = attrs.fill;
-    this.borderColor = attrs.fill;
-    this.borderWidth = attrs.fill;
+    this.borderColor = attrs.borderColor;
+    this.borderWidth = attrs.borderWidth;
     // rest of constructor code here.
 }
 Container.inheritsFrom(Drawable);
@@ -266,6 +266,11 @@ Container.inheritsFrom(Drawable);
 Container.prototype.draw = function (c) {
     // draw code here
     c.save();
+	
+	if(this.borderWidth != 0){
+        c.lineWidth = this.borderWidth;
+	}
+	
     c.translate(this.left,this.top);
 	c.rotate(this.theta);
    
@@ -280,13 +285,10 @@ Container.prototype.draw = function (c) {
     if(this.fill != ""){
         c.fillStyle = this.fill;
         c.fill();
-//        c.fillRect(0,0,this.width,this.height);
     }
 
     if(this.borderWidth != 0){
-        c.borderWidth = this.borderWidth;
         c.stroke();
-//        c.strokeRect(0,0,this.width,this.height);
     }
     c.clip();
     for(var i=0;i<this.children.length;i++){
@@ -294,7 +296,7 @@ Container.prototype.draw = function (c) {
         
         //c.save();
         //c.translate(child.left,child.top);
-        c.rotate(child.theta);
+        //c.rotate(child.theta);
         child.draw(c);
         c.restore();
     }
@@ -324,16 +326,18 @@ PolygonContainer.inheritsFrom(Container);
 
 PolygonContainer.prototype.draw = function (c) {
     // draw code here
-    if(typeof(this.lineWidth) != "undefined"){
-         c.lineWidth = this.lineWidth;
-    }
-    if(typeof(this.color) != "undefined"){
-         c.strokeStyle = this.color;
-    }
-
-    c.rotate(this.polygonTheta);
-    c.moveTo(0,this.radius);
+	c.save();
+	
+	if(this.borderWidth != 0){
+        c.lineWidth = this.borderWidth;
+	}
+	
+    c.translate(this.left,this.top);
+   
+	c.rotate(this.polygonTheta);
     c.beginPath();
+	c.moveTo(0,this.radius);
+    
     
     for(var i=0;i<this.sides-1;i++){
         var ang = Math.PI * (360 / i);
@@ -344,5 +348,20 @@ PolygonContainer.prototype.draw = function (c) {
 
     c.closePath();
     c.stroke();
+   
+    c.clip();
+	
+    for(var i=0;i<this.children.length;i++){
+        var child = this.children[i];
+        
+        c.save();
+        c.translate(child.left,child.top);
+        c.rotate(child.theta);
+        child.draw(c);
+        c.restore();
+    }
     
+
+    c.restore();
+	
 };
