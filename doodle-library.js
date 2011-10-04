@@ -291,10 +291,11 @@ Container.prototype.draw = function (c) {
         c.stroke();
     }
     c.clip();
+	
     for(var i=0;i<this.children.length;i++){
         var child = this.children[i];
         
-        //c.save();
+        c.save();
         //c.translate(child.left,child.top);
         //c.rotate(child.theta);
         child.draw(c);
@@ -321,47 +322,67 @@ function PolygonContainer(attrs) {
     this.centerX = attrs.centerX;
     this.centerY = attrs.centerY;
     this.polygonTheta = attrs.polygonTheta;
+    this.left = attrs.centerX - attrs.radius;
+    this.top = attrs.centerY - attrs.radius;
 }
 PolygonContainer.inheritsFrom(Container);
 
 PolygonContainer.prototype.draw = function (c) {
     // draw code here
 	c.save();
-	
-	if(this.borderWidth != 0){
-        c.lineWidth = this.borderWidth;
-	}
-	
-    c.translate(this.left,this.top);
-   
-	c.rotate(this.polygonTheta);
-    c.beginPath();
-	c.moveTo(0,this.radius);
-    
-    
-    for(var i=0;i<this.sides-1;i++){
-        var ang = Math.PI * (360 / i);
-        var x = this.radius * Math.cos(ang);
-        var y = this.radius * Math.sin(ang);
-        c.lineTo(x,y);
-    }
+	{
+	    if(this.borderWidth != 0){
+            c.lineWidth = this.borderWidth;
+	    }
 
-    c.closePath();
-    c.stroke();
-   
-    c.clip();
+        if(typeof(this.borderColor) != "undefined" ){
+            c.strokeStyle = this.borderColor;
+	    }
+
+        if(typeof(this.fill) != "undefined") {
+            c.fillStyle = this.fill;
+        }
 	
-    for(var i=0;i<this.children.length;i++){
-        var child = this.children[i];
-        
         c.save();
-        c.translate(child.left,child.top);
-        c.rotate(child.theta);
-        child.draw(c);
+        {
+            c.translate(this.centerX,this.centerY);
+	        c.rotate(-this.polygonTheta);
+    
+            var ang = (360/this.sides) * (Math.PI / 180);
+
+            c.beginPath();
+            // first point
+            c.moveTo(this.radius, 0);
+    
+            for(var i=1;i<=this.sides;i++){
+		        var inAng = ang * i;
+                var x = this.radius * Math.cos(inAng);
+                var y = this.radius * Math.sin(inAng);
+                c.lineTo(x,y);
+            }
+
+            c.closePath();
+            c.fill();
+            c.stroke();
+            c.clip();
+        }
+	    c.restore();
+
+        c.save();
+        {
+            c.translate(this.left, this.top);
+
+            for(var i=0;i<this.children.length;i++){
+                var child = this.children[i];
+        
+                c.save();
+                //c.translate(child.left,child.top);
+                //c.rotate(child.theta);
+                child.draw(c);
+                c.restore();
+            }
+        }
         c.restore();
     }
-    
-
-    c.restore();
-	
+	c.restore();
 };

@@ -6,6 +6,19 @@ window.onload = function () {
 
     var root = new Doodle(context);
 	
+	var tri = new PolygonContainer({
+		left: 100,
+		top: 100,
+		centerX: 30,
+		centerY: 30,
+		sides: 3,
+		radius: 100,
+	    polygonTheta: Math.PI / 2,
+		borderColor: "#ffd34e",
+		borderWidth: 5,
+		fill: "#fffAD5"
+    });
+	
 	var piOverFour = new Container({
 		width: 50,
 		height: 50,
@@ -76,6 +89,6 @@ window.onload = function () {
     rotContainer2.children.push(rotTextContainer);
     rotTextContainer.children.push(rotText);
 
-    root.children = [piOverFour,rotContainer1, imgFrameFrame];
+    root.children = [tri, piOverFour,rotContainer1, imgFrameFrame];
     root.draw();
 };
