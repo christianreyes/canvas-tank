@@ -346,7 +346,7 @@ PolygonContainer.prototype.draw = function (c) {
         c.save();
         {
             c.translate(this.centerX,this.centerY);
-	        c.rotate(-this.polygonTheta);
+	        c.rotate(this.polygonTheta);
     
             var ang = (360/this.sides) * (Math.PI / 180);
 
