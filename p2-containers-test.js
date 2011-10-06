@@ -10,7 +10,7 @@ function makeSierpinski(centerX, centerY, radius, level) {
             borderColor: "#ffd34e",
             fill: "#105b63",
             borderWidth: 5,
-            polygonTheta: -Math.PI / 2,
+            polygonTheta: Math.PI / 2,
         });
         return result;
     } else {
@@ -23,7 +23,7 @@ function makeSierpinski(centerX, centerY, radius, level) {
             radius: radius,
             borderColor: "#ffd34e",
             borderWidth: 5,
-	    polygonTheta: -Math.PI / 2,
+	    polygonTheta: Math.PI / 2,
             fill: "#fffAD5"
         });
 

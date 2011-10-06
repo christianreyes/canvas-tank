@@ -17,6 +17,7 @@ function Doodle(context) {
 }
 
 Doodle.prototype.draw = function() {
+    this.context.clearRect(0,0,1000,1000);
 	// Your draw code here
     for(var i=0;i<this.children.length;i++){
         this.context.save();
@@ -224,6 +225,8 @@ function Arc(attrs) {
     this.startingTheta = attrs.startingTheta;
     this.endingTheta = attrs.endingTheta;
     this.counterclockwise = attrs.counterclockwise;
+    this.left = attrs.centerX - attrs.radius;
+    this.top = attrs.centerY - attrs.radius;
 	// rest of constructor code here
 }
 Arc.inheritsFrom(Primitive);
@@ -346,7 +349,7 @@ PolygonContainer.prototype.draw = function (c) {
         c.save();
         {
             c.translate(this.centerX,this.centerY);
-	        c.rotate(this.polygonTheta);
+	        c.rotate(-this.polygonTheta);
     
             var ang = (360/this.sides) * (Math.PI / 180);
 
