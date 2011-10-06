@@ -17,7 +17,6 @@ function Doodle(context) {
 }
 
 Doodle.prototype.draw = function() {
-    this.context.clearRect(0,0,1000,1000);
 	// Your draw code here
     for(var i=0;i<this.children.length;i++){
         this.context.save();
@@ -252,7 +251,7 @@ function Container(attrs) {
         height: 100,
         fill: "",
         borderColor: "black",
-        borderWidth: 0,
+        borderWidth: 0
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);    

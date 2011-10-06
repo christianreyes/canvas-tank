@@ -6,13 +6,14 @@ var y_pos = _canvas_height / 2;
 
 var _doodle = undefined;
 var _circle = undefined;
+var _arrow = undefined;
 
 // in milliseconds
 var _time_step = 30;
 
 var _gravity = 3;
-var _x_per_sec = 50;
-var _y_per_sec = -5;
+var _x_per_sec = 100;
+var _y_per_sec = -7;
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -31,8 +32,15 @@ window.onload = function () {
         startingTheta: 0,
         endingTheta: Math.PI * 2
     });
+	
+	_arrow = new Line({
+		startX: 0,
+		startY: _canvas_width /2,
+		endX: 0 + 10,
+		endY: _canvas_height/2 - 2
+	});
 
-    _doodle.children = [_circle];
+    _doodle.children = [ _arrow];
 
     _doodle.draw();
 
@@ -48,17 +56,33 @@ function canvasMouseMove(canvas, event) {
 }
 
 function updateAndDraw() {
+	_doodle.context.clearRect(0,0,_canvas_width,_canvas_height);
     //followMouse();
     fallingCircle(_x_per_sec, _y_per_sec);
     _doodle.draw();
 }
 
 function fallingCircle(xPerSec, yPerSec) {
-    if (_circle.centerX < _canvas_height + _circle.radius + _circle.lineWidth) {
+    if (_arrow.startY < _canvas_height) {
         _y_per_sec += _gravity * _time_step / 1000;
-        
-        _circle.centerX += _x_per_sec * _time_step / 1000;
-        _circle.centerY += _y_per_sec;
+		
+		_arrow.startX += _x_per_sec * _time_step / 1000; 
+		_arrow.endX += _x_per_sec * _time_step / 1000;
+		
+		_arrow.startY = _arrow.endY - _gravity * _time_step / 1000;
+		_arrow.endY += _y_per_sec;
+		
+        //_circle.centerX += _x_per_sec * _time_step / 1000;
+        //_circle.centerY += _y_per_sec;
+    } else {
+		_arrow.startX = 0; 
+		_arrow.startY = _canvas_width /2;
+		_arrow.endX = 0 + 10;
+		_arrow.endY = _canvas_width /2 - 2;
+	
+        //_circle.centerX = _canvas_width / 2;
+        //_circle.centerY = _canvas_height / 2;
+        _y_per_sec = -7;
     }
 }
 
