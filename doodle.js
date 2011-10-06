@@ -9,11 +9,17 @@ var _circle = undefined;
 var _arrow = undefined;
 
 // in milliseconds
-var _time_step = 30;
+var _time_step = 15;
+var _time_s_to_ms = _time_step / 1000;
 
 var _gravity = 3;
-var _x_per_sec = 100;
-var _y_per_sec = -7;
+var _gravity_increment = _gravity * _time_s_to_ms;
+
+var _x_per_sec = 125;
+var _y_per_sec = -5;
+
+var _x_increment = _x_per_sec * _time_s_to_ms;
+var _y_increment = _y_per_sec * _time_s_to_ms;
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -64,12 +70,12 @@ function updateAndDraw() {
 
 function fallingCircle(xPerSec, yPerSec) {
     if (_arrow.startY < _canvas_height) {
-        _y_per_sec += _gravity * _time_step / 1000;
+        _y_per_sec += _gravity_increment;
 		
-		_arrow.startX += _x_per_sec * _time_step / 1000; 
-		_arrow.endX += _x_per_sec * _time_step / 1000;
+		_arrow.startX += _x_increment; 
+		_arrow.endX += _x_increment;
 		
-		_arrow.startY = _arrow.endY - _gravity * _time_step / 1000;
+		_arrow.startY = _arrow.endY - _y_per_sec;
 		_arrow.endY += _y_per_sec;
 		
         //_circle.centerX += _x_per_sec * _time_step / 1000;
@@ -82,7 +88,7 @@ function fallingCircle(xPerSec, yPerSec) {
 	
         //_circle.centerX = _canvas_width / 2;
         //_circle.centerY = _canvas_height / 2;
-        _y_per_sec = -7;
+        _y_per_sec = -5;
     }
 }
 
