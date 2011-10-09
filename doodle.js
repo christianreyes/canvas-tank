@@ -1,46 +1,45 @@
 // gravity idea: http://www.rodedev.com/tutorials/gamephysics/
 
+// global variables for the canvas dimensions
 var _canvas_width = 800;
 var _canvas_height = 500;
 
-var x_pos = _canvas_width / 2;
-var y_pos = _canvas_height / 2;
-
+// easy to access objects
 var _doodle = undefined;
 var _ground = undefined;
 var _truck_container = undefined;
-var _launcher = undefined;
-var _arrow = undefined;
 var _arrow_container = undefined;
-var _move_arr = [];
 
+// contains the balloons flying across the screen
 var _balloons = [];
 
 // in milliseconds
 var _time_step = 10;
 var _time_s_to_ms = _time_step / 1000;
 
+// magical gravity values. px per frame
 var _gravity = 5;
 var _gravity_increment = _gravity * _time_s_to_ms;
 
-var _x_per_sec = 3;
-var _y_per_sec = -4;
-
+// magnitude of the shot in px per sec
 var _power = 6.75;
 
+// _fire true means the arrow is flying in the air and another can't be fired
+// _fire false means that another arrow can be fired
 var _fire = false;
-var _dirty = true;
 
+// text object which contains the numerical score
 var _score = undefined;
 
+// upper and lower bounds for the xVelocity of the balloons
 var _balloon_min_x = .25;
 var _balloon_max_x = 1.75;
-
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
 
+	// set the canvas to the proper width and height
 	canvas.style.width = _canvas_width + "px";
 	canvas.style.height = _canvas_height + "px";
     canvas.width = _canvas_width;
@@ -56,17 +55,15 @@ window.onload = function () {
 		top: _canvas_height - 50,
 		borderWidth: 2
 	});
-	
-	
+
 	_truck_container = new Container({
 		width: 80,
 		height: 80,
 		left: 10,
-		top: _canvas_height - 50 - 80,
+		top: _canvas_height - _ground.height - 80,
 		borderWidth: 0
 	});
 
-		
 	_launcher = new Container({
 		top: 55,
 		left: 10,
@@ -124,7 +121,9 @@ window.onload = function () {
 		left: _truck_container.left + _launcher.left,
 		top: _truck_container.top + _launcher.top,
 		theta: _launcher.theta,
-		borderWidth: 0
+		borderWidth: 0,
+		xVelocity: 3,
+		yVelocity: -4
 	});
 	
 	var shaft = new Line({
@@ -176,18 +175,15 @@ window.onload = function () {
 
     _doodle.draw();
 
-    //canvas.addEventListener("mousemove", function (event) { canvasMouseMove(canvas, event); });
+	// track the keys pressed
 	window.addEventListener('keydown',doKeyDown,true);
 
+	// create balloons every 2 seconds
 	setInterval(createBalloons, 2000);
+	
+	// draw the frame every _time_step ms
     setInterval(updateAndDraw, _time_step);
 };
-
-function canvasMouseMove(canvas, event) {
-    var bb = canvas.getBoundingClientRect();
-    _x_pos = (event.clientX - bb.left) * (canvas.width / bb.width);
-    _y_pos = (event.clientY - bb.top) * (canvas.width / bb.width);
-}
 
 function createBalloons(){
 	var balloon_container = new Container({
@@ -197,7 +193,7 @@ function createBalloons(){
 		width: 16,
 		borderWidth: 0,
 		xVelocity: _balloon_min_x + (Math.random()* (_balloon_max_x - _balloon_min_x))
-	});
+	}); // xVelocity between the min and max
 	
 	var balloon = new Arc({
         centerX: 8,
@@ -211,25 +207,33 @@ function createBalloons(){
 	
 	balloon_container.children = [balloon];
 	_doodle.children.push(balloon_container);
-	_balloons.push(balloon_container);
 	
+	// keeps track of the balloons
+	_balloons.push(balloon_container);
 }
 
 function moveBalloons(){
 	for(var b=0;b<_balloons.length;b++){
 		var balloonC = _balloons[b];
+		
+		// move the balloon left
 		balloonC.left -= balloonC.xVelocity;
 		
+		// if the arrow is 12 px or less close to the balloon. Make the balloon dissapear and add 1 to the score
 		if( Math.abs(balloonC.left - _arrow_container.left) <= 12 && Math.abs(balloonC.top - _arrow_container.top) <= 12){
+			// remove balloon from objects to be drawn and objects to be moved
 			_balloons.splice(b,1);
 			for(var i =0;i<_doodle.children.length;i++){
 				if(_doodle.children[i] == balloonC){
 					_doodle.children.splice(i,1);
+					// increase the score by one
 					_score.content = parseInt(_score.content,10) + 1;
 				}
 			}
 		} else {		
+			// if the balloon is off the screen make it disappear
 			if(balloonC.left + 15 < 0){
+				// remove balloon from objects to be drawn and objects to be moved
 				_balloons.splice(b,1);
 				for(var i =0;i<_doodle.children.length;i++){
 					if(_doodle.children[i] == balloonC){
@@ -242,58 +246,43 @@ function moveBalloons(){
 }
 
 function updateAndDraw() {
-	//clearDirty([_truck_container, _arrow_container]);
-	if(_dirty){
-		_doodle.context.clearRect(0,0,_canvas_width, _canvas_height - 50);
-	}
-	
+	_doodle.context.clearRect(0,0,_canvas_width, _canvas_height - 50);
 	moveBalloons();
 	
+	// if the is flying, draw it
 	if(_fire){
 		fallingArrow();
 	}
 	
+	// update the canvas
     _doodle.draw();
 }
 
-function clearDirty(dirty){
-	for(var i = 0;i<dirty.length;i++)
-	{
-		var obj = dirty[i];
-		_doodle.context.save();
-			_doodle.context.transform(obj.left, obj.top);
-			_doodle.context.rotate(-obj.theta);
-			_doodle.context.clearRect(0,0,obj.width, obj.height);
-		_doodle.context.restore();
-	}
-}
-
 function fallingArrow() {
-    if (_arrow_container.top < _canvas_height && _arrow_container.left < _canvas_width) {
-		_dirty = true;
-	
-        _y_per_sec += _gravity_increment;
+	// if the arrow is in the canvas, move it
+    if (_arrow_container.top < _canvas_height && _arrow_container.left < _canvas_width) {	
+        _arrow_container.yVelocity += _gravity_increment;
 		
 		var oldLeft = _arrow_container.left;
 		var oldTop = _arrow_container.top;
-		var newLeft = oldLeft + _x_per_sec;
-		var newTop = oldTop + _y_per_sec;
+		var newLeft = oldLeft + _arrow_container.xVelocity;
+		var newTop = oldTop + _arrow_container.yVelocity;
 		
 		var angToGround = Math.atan( (newTop - oldTop ) / (newLeft - oldLeft) );
 		
-		_arrow_container.left += _x_per_sec; 
-		_arrow_container.top += _y_per_sec;
+		_arrow_container.left += _arrow_container.xVelocity; 
+		_arrow_container.top += _arrow_container.yVelocity;
 		_arrow_container.theta = angToGround;
 
     } else {
+		// if the arrow is out of the canvas, "load" it to be fired
 		_fire = false;
-		_dirty = true;
 		_arrow_container.left = _truck_container.left + _launcher.left; 
 		_arrow_container.top = _truck_container.top + _launcher.top;
 		_arrow_container.theta = _launcher.theta;
 		
-		_x_per_sec = _power * Math.cos(-1 *_arrow_container.theta);
-        _y_per_sec = -1 * _power * Math.sin(-1 * _arrow_container.theta);
+		_arrow_container.xVelocity = _power * Math.cos(-1 *_arrow_container.theta);
+        _arrow_container.yVelocity = -1 * _power * Math.sin(-1 * _arrow_container.theta);
     }
 }
 
@@ -302,31 +291,30 @@ function fallingArrow() {
 
 function doKeyDown(evt){
   switch (evt.keyCode) {
-    case 38:  /* Up arrow was pressed */
+    case 38:  /* Up arrow was pressed. move the arrow and launcher accordingly */
 		if( _launcher.theta + Math.PI/2 > .2){
 			_dirty = true;
 			_launcher.theta -= .1;
+			// don't change the arrow if it's currently flying
 			if(!_fire) {
 				_arrow_container.theta = _launcher.theta;
-				_x_per_sec = _power * Math.cos(-1 * _arrow_container.theta);
-				_y_per_sec = -1 * _power * Math.sin(-1 *_arrow_container.theta);
+				_arrow_container.xVelocity = _power * Math.cos(-1 * _arrow_container.theta);
+				_arrow_container.yVelocity = -1 * _power * Math.sin(-1 *_arrow_container.theta);
 			}
 		}
 		break;
-    case 40:  /* Down arrow was pressed */
+    case 40:  /* Down arrow was pressed. move the arrow and launcher accordingly */
 		if( _launcher.theta < -.1){
-			_dirty = true;
 			_launcher.theta += .1
 			if(!_fire){
 				_arrow_container.theta = _launcher.theta;
-				_x_per_sec = _power * Math.cos(-1 * _arrow_container.theta);
-				_y_per_sec = -1 * _power * Math.sin(-1 * _arrow_container.theta);
+				_arrow_container.xVelocity = _power * Math.cos(-1 * _arrow_container.theta);
+				_arrow_container.yVelocity = -1 * _power * Math.sin(-1 * _arrow_container.theta);
 			}
 		}
       break;
-    case 37:  /* Left arrow was pressed */
+    case 37:  /* Left arrow was pressed. move the arrow and launcher accordingly */
 		if(_truck_container.left > 5){
-			_dirty = true;
 			_truck_container.left -= 3;
 			if(!_fire) {
 				_arrow_container.left = _truck_container.left + _launcher.left; 
@@ -335,7 +323,6 @@ function doKeyDown(evt){
 		break;
     case 39:  /* Right arrow was pressed */
 		if(_canvas_width - _truck_container.left + _truck_container.width > 5){
-			_dirty = true;
 			_truck_container.left += 3;
 			if(!_fire) {
 				_arrow_container.left = _truck_container.left + _launcher.left; 
@@ -345,7 +332,6 @@ function doKeyDown(evt){
 	case 32:  /* Space bar was pressed */
 		if(!_fire){
 			_fire = true;
-			_dirty = true;
 		}      
 		break;
   }
