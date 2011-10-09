@@ -126,7 +126,8 @@ function Line(attrs) {
         startX: 0,
         startY: 0,
         endX: 0,
-        endY: 0
+        endY: 0,
+		lineWidth: 1
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
@@ -135,6 +136,7 @@ function Line(attrs) {
 	this.startY = attrs.startY;
 	this.endX = attrs.endX;
 	this.endY = attrs.endY;
+	this.lineWidth = attrs.lineWidth;
 }
 Line.inheritsFrom(Primitive);
 
@@ -157,52 +159,64 @@ Line.prototype.draw = function (c) {
 function Path(attrs) {
     var dflt = {
         type: "straight",
-        points: []
+        points: [],
+		fill: ""
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
     // rest of constructor code here
 	this.type = attrs.type;
 	this.points = attrs.points;
+	this.fill = attrs.fill
 }
 Path.inheritsFrom(Primitive);
 
 Path.prototype.draw = function (c) {
-    // draw code here
-    c.beginPath();
-    c.moveTo(this.points[0].x, this.points[0].y);
-    
-    if(typeof(this.lineWidth) != "undefined"){
-         c.lineWidth = this.lineWidth;
-    }
-    if(typeof(this.color) != "undefined"){
-         c.strokeStyle = this.color;
-    }
+	if(this.points.length > 0){
+		// draw code here
+		c.beginPath();
+		c.moveTo(this.points[0].x, this.points[0].y);
+		
+		if(typeof(this.lineWidth) != "undefined"){
+			c.lineWidth = this.lineWidth;
+		}
+		if(typeof(this.color) != "undefined"){
+			c.strokeStyle = this.color;
+		}
+		if(this.fill != ""){
+			c.fillStyle = this.fill;
+		}
 
-	//c.lineCap = "r";
-    switch(this.type){
-        case "straight":
-            for(var i=1;i<this.points.length;i++){
-                var p = this.points[i];
-                c.lineTo(p.x, p.y);
-            }
-            break;
-        case "quadratic":
-            for(var i=1;i<this.points.length;i++){
-                var p = this.points[i];
-                c.quadraticCurveTo(p.cp1x, p.cp1y, p.x, p.y);
-            }
-            break;
-        case "bezier":
-            for(var i=1;i<this.points.length;i++){
-                var p = this.points[i];
-                c.bezierCurveTo(p.cp1x, p.cp1y, p.cp2x, p.cp2y, p.x, p.y);
-            }
-            break;
-    }
-    
-    c.stroke();
-
+		//c.lineCap = "r";
+		switch(this.type){
+			case "straight":
+				for(var i=1;i<this.points.length;i++){
+					var p = this.points[i];
+					c.lineTo(p.x, p.y);
+				}
+				break;
+			case "quadratic":
+				for(var i=1;i<this.points.length;i++){
+					var p = this.points[i];
+					c.quadraticCurveTo(p.cp1x, p.cp1y, p.x, p.y);
+				}
+				break;
+			case "bezier":
+				for(var i=1;i<this.points.length;i++){
+					var p = this.points[i];
+					c.bezierCurveTo(p.cp1x, p.cp1y, p.cp2x, p.cp2y, p.x, p.y);
+				}
+				break;
+		}
+		
+		if(this.fill != ""){
+			c.fill();
+		}
+		else
+		{	
+			c.stroke();
+		}
+	}
 };
 
 
