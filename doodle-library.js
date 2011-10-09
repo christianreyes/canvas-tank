@@ -228,7 +228,8 @@ function Arc(attrs) {
         startingTheta: 0,
         endingTheta: 0,
         counterclockwise: false,
-		fill: ""
+		fill: "",
+		velocity: ""
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
@@ -242,6 +243,7 @@ function Arc(attrs) {
     this.left = attrs.centerX - attrs.radius;
     this.top = attrs.centerY - attrs.radius;
 	this.fill = attrs.fill;
+	this.velocity = attrs.velocity;
 	// rest of constructor code here
 }
 Arc.inheritsFrom(Primitive);

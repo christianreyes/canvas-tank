@@ -31,7 +31,9 @@ var _power = 6;
 var _fire = false;
 var _dirty = true;
 
-var _balloon_x_per_sec = 1;
+var _balloon_min_x = .25;
+var _balloon_max_x = 1.75;
+
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -181,7 +183,8 @@ function createDeleteBalloons(){
 		fill: "red",
         radius: 6,
         startingTheta: 0,
-        endingTheta: Math.PI * 2
+        endingTheta: Math.PI * 2,
+		velocity: _balloon_min_x + (Math.random()* (_balloon_max_x - _balloon_min_x))
     });
 	
 	_doodle.children.push(balloon);
@@ -192,8 +195,8 @@ function moveBalloons(){
 	for(var b=0;b<_balloons.length;b++){
 		var balloon = _balloons[b];
 		
-		balloon.left -= _balloon_x_per_sec;
-		balloon.centerX -= _balloon_x_per_sec;
+		balloon.left -= balloon.velocity;
+		balloon.centerX -= balloon.velocity;
 	}
 }
 
