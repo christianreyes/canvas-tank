@@ -15,7 +15,7 @@ function makeSierpinski(centerX, centerY, radius, level) {
         return result;
     } else {
         var result = new PolygonContainer({
-                	left: centerX - radius,
+            left: centerX - radius,
         	top: centerY - radius,
             centerX: centerX,
             centerY: centerY,

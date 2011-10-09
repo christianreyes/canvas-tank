@@ -1,3 +1,14 @@
+/* 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Title:			Project 2: Doodle!
+Author : 		Christian Reyes 
+Description:    Javascript for Doodle
+Course:         05-433D SSUI Web Lab
+Created : 		29 Sep 2011
+Modified : 		 9 Oct 2011
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+*/
+
 // gravity idea: http://www.rodedev.com/tutorials/gamephysics/
 
 // global variables for the canvas dimensions
