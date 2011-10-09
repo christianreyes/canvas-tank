@@ -26,7 +26,7 @@ var _gravity_increment = _gravity * _time_s_to_ms;
 var _x_per_sec = 3;
 var _y_per_sec = -4;
 
-var _power = 6;
+var _power = 6.4;
 
 var _fire = false;
 var _dirty = true;
@@ -228,13 +228,13 @@ function moveBalloons(){
 					_score.content = parseInt(_score.content,10) + 1;
 				}
 			}
-		}
-		
-		if(balloonC.left + 15 < 0){
-			_balloons.splice(b,1);
-			for(var i =0;i<_doodle.children.length;i++){
-				if(_doodle.children[i] == balloonC){
-					_doodle.children.splice(i,1);
+		} else {		
+			if(balloonC.left + 15 < 0){
+				_balloons.splice(b,1);
+				for(var i =0;i<_doodle.children.length;i++){
+					if(_doodle.children[i] == balloonC){
+						_doodle.children.splice(i,1);
+					}
 				}
 			}
 		}
