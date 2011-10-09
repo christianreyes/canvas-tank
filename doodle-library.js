@@ -228,8 +228,7 @@ function Arc(attrs) {
         startingTheta: 0,
         endingTheta: 0,
         counterclockwise: false,
-		fill: "",
-		velocity: ""
+		fill: ""
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
@@ -243,7 +242,6 @@ function Arc(attrs) {
     this.left = attrs.centerX - attrs.radius;
     this.top = attrs.centerY - attrs.radius;
 	this.fill = attrs.fill;
-	this.velocity = attrs.velocity;
 	// rest of constructor code here
 }
 Arc.inheritsFrom(Primitive);
@@ -275,7 +273,9 @@ function Container(attrs) {
         fill: "",
         borderColor: "black",
         borderWidth: 0,
-		gradient: ""
+		gradient: "",
+		xVelocity: 0,
+		yVelocity: 0
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);    
@@ -286,6 +286,8 @@ function Container(attrs) {
     this.borderColor = attrs.borderColor;
     this.borderWidth = attrs.borderWidth;
 	this.gradient = attrs.gradient;
+	this.xVelocity = attrs.xVelocity;
+	this.yVelocity = attrs.yVelocity;
     // rest of constructor code here.
 }
 Container.inheritsFrom(Drawable);

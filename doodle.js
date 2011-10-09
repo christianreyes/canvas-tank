@@ -31,6 +31,8 @@ var _power = 6;
 var _fire = false;
 var _dirty = true;
 
+var _score = undefined;
+
 var _balloon_min_x = .25;
 var _balloon_max_x = 1.75;
 
@@ -157,15 +159,27 @@ window.onload = function () {
     });
 	
 	_arrow_container.children = [end, shaft, point];
+	
+	var scoreText = new Text({
+		left: 20, 
+		height: 40, 
+		content: "Score: " 
+	});
+	
+	_score = new Text({ 
+		left: 80, 
+		height: 40, 
+		content: "0" 
+	});
 
-    _doodle.children = [ _arrow_container, _ground, _truck_container];
+    _doodle.children = [ scoreText, _score, _arrow_container, _ground, _truck_container];
 
     _doodle.draw();
 
     //canvas.addEventListener("mousemove", function (event) { canvasMouseMove(canvas, event); });
 	window.addEventListener('keydown',doKeyDown,true);
 
-	setInterval(createDeleteBalloons, 1000);
+	setInterval(createBalloons, 2000);
     setInterval(updateAndDraw, _time_step);
 };
 
@@ -175,28 +189,55 @@ function canvasMouseMove(canvas, event) {
     _y_pos = (event.clientY - bb.top) * (canvas.width / bb.width);
 }
 
-function createDeleteBalloons(){
+function createBalloons(){
+	var balloon_container = new Container({
+		top: Math.random() * (_canvas_height - 70),
+		left: _canvas_width + 10,
+		height: 16,
+		width: 16,
+		borderWidth: 0,
+		xVelocity: _balloon_min_x + (Math.random()* (_balloon_max_x - _balloon_min_x))
+	});
+	
 	var balloon = new Arc({
-        centerX: _canvas_width + 10,
-        centerY: Math.random() * (_canvas_height - 50),
+        centerX: 8,
+        centerY: 8,
         lineWidth: 1,
 		fill: "red",
         radius: 6,
         startingTheta: 0,
-        endingTheta: Math.PI * 2,
-		velocity: _balloon_min_x + (Math.random()* (_balloon_max_x - _balloon_min_x))
+        endingTheta: Math.PI * 2
     });
 	
-	_doodle.children.push(balloon);
-	_balloons.push(balloon);
+	balloon_container.children = [balloon];
+	_doodle.children.push(balloon_container);
+	_balloons.push(balloon_container);
+	
 }
 
 function moveBalloons(){
 	for(var b=0;b<_balloons.length;b++){
-		var balloon = _balloons[b];
+		var balloonC = _balloons[b];
+		balloonC.left -= balloonC.xVelocity;
 		
-		balloon.left -= balloon.velocity;
-		balloon.centerX -= balloon.velocity;
+		if( Math.abs(balloonC.left - _arrow_container.left) <= 12 && Math.abs(balloonC.top - _arrow_container.top) <= 12){
+			_balloons.splice(b,1);
+			for(var i =0;i<_doodle.children.length;i++){
+				if(_doodle.children[i] == balloonC){
+					_doodle.children.splice(i,1);
+					_score.content = parseInt(_score.content,10) + 1;
+				}
+			}
+		}
+		
+		if(balloonC.left + 15 < 0){
+			_balloons.splice(b,1);
+			for(var i =0;i<_doodle.children.length;i++){
+				if(_doodle.children[i] == balloonC){
+					_doodle.children.splice(i,1);
+				}
+			}
+		}
 	}
 }
 
