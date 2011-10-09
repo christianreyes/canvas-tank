@@ -272,7 +272,8 @@ function Container(attrs) {
         height: 100,
         fill: "",
         borderColor: "black",
-        borderWidth: 0
+        borderWidth: 0,
+		gradient: ""
     };
     attrs = mergeWithDefault(attrs, dflt);
     Drawable.call(this, attrs);    
@@ -282,6 +283,7 @@ function Container(attrs) {
     this.fill = attrs.fill;
     this.borderColor = attrs.borderColor;
     this.borderWidth = attrs.borderWidth;
+	this.gradient = attrs.gradient;
     // rest of constructor code here.
 }
 Container.inheritsFrom(Drawable);
@@ -309,6 +311,19 @@ Container.prototype.draw = function (c) {
         c.fillStyle = this.fill;
         c.fill();
     }
+	
+	if(this.gradient != ""){
+        var grad = c.createLinearGradient(0,0,this.width,this.height);
+        
+        for(var i=0; i<this.gradient.length;i++){
+            var stop = this.gradient[i];
+            grad.addColorStop(stop.position,stop.color);
+        }
+        
+        c.fillStyle = grad;
+        c.fill();
+    }
+
 
     if(this.borderWidth != 0){
         c.stroke();

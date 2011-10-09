@@ -1,7 +1,7 @@
 // gravity idea: http://www.rodedev.com/tutorials/gamephysics/
 
 var _canvas_width = 800;
-var _canvas_height = 600;
+var _canvas_height = 500;
 
 var x_pos = _canvas_width / 2;
 var y_pos = _canvas_height / 2;
@@ -10,10 +10,11 @@ var _doodle = undefined;
 var _ground = undefined;
 var _truck_container = undefined;
 var _launcher = undefined;
-var _circle = undefined;
 var _arrow = undefined;
 var _arrow_container = undefined;
 var _move_arr = [];
+
+var _balloons = [];
 
 // in milliseconds
 var _time_step = 10;
@@ -25,10 +26,12 @@ var _gravity_increment = _gravity * _time_s_to_ms;
 var _x_per_sec = 3;
 var _y_per_sec = -4;
 
-var _power = 5;
+var _power = 6;
 
 var _fire = false;
-var _dirty = false;
+var _dirty = true;
+
+var _balloon_x_per_sec = 1;
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -41,8 +44,6 @@ window.onload = function () {
 
     _doodle = new Doodle(context);
 	
-
- 
 	_ground = new Container({
 		width: _canvas_width,
 		height: 50,
@@ -162,6 +163,7 @@ window.onload = function () {
     //canvas.addEventListener("mousemove", function (event) { canvasMouseMove(canvas, event); });
 	window.addEventListener('keydown',doKeyDown,true);
 
+	setInterval(createDeleteBalloons, 1000);
     setInterval(updateAndDraw, _time_step);
 };
 
@@ -171,11 +173,37 @@ function canvasMouseMove(canvas, event) {
     _y_pos = (event.clientY - bb.top) * (canvas.width / bb.width);
 }
 
+function createDeleteBalloons(){
+	var balloon = new Arc({
+        centerX: _canvas_width + 10,
+        centerY: Math.random() * (_canvas_height - 50),
+        lineWidth: 1,
+		fill: "red",
+        radius: 6,
+        startingTheta: 0,
+        endingTheta: Math.PI * 2
+    });
+	
+	_doodle.children.push(balloon);
+	_balloons.push(balloon);
+}
+
+function moveBalloons(){
+	for(var b=0;b<_balloons.length;b++){
+		var balloon = _balloons[b];
+		
+		balloon.left -= _balloon_x_per_sec;
+		balloon.centerX -= _balloon_x_per_sec;
+	}
+}
+
 function updateAndDraw() {
 	//clearDirty([_truck_container, _arrow_container]);
 	if(_dirty){
-		_doodle.context.clearRect(0,0,_canvas_width, _canvas_height);
+		_doodle.context.clearRect(0,0,_canvas_width, _canvas_height - 50);
 	}
+	
+	moveBalloons();
 	
 	if(_fire){
 		fallingArrow();
@@ -278,15 +306,3 @@ function doKeyDown(evt){
 		break;
   }
 }
-
-	//var sky = new Container({
-	//	width: _canvas_width,
-	//	height: _canvas_height - 50,
-	//	left:0,
-	//	top:0,
-	//	fill: ""
-	//	//gradient: [
-	//	//	{position: 0, color: "#0099FF"},
-	//	//	{position: 1, color: "#00D6FF"}
-	//	//	]
-	//});
