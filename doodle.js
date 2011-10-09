@@ -26,7 +26,7 @@ var _gravity_increment = _gravity * _time_s_to_ms;
 var _x_per_sec = 3;
 var _y_per_sec = -4;
 
-var _power = 6.4;
+var _power = 6.75;
 
 var _fire = false;
 var _dirty = true;
@@ -269,7 +269,7 @@ function clearDirty(dirty){
 }
 
 function fallingArrow() {
-    if (_arrow_container.top < _canvas_height) {
+    if (_arrow_container.top < _canvas_height && _arrow_container.left < _canvas_width) {
 		_dirty = true;
 	
         _y_per_sec += _gravity_increment;
