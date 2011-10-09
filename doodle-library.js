@@ -227,7 +227,8 @@ function Arc(attrs) {
         radius: 0,
         startingTheta: 0,
         endingTheta: 0,
-        counterclockwise: false
+        counterclockwise: false,
+		fill: ""
     };
     attrs = mergeWithDefault(attrs, dflt);
     Primitive.call(this, attrs);
@@ -240,6 +241,7 @@ function Arc(attrs) {
     this.counterclockwise = attrs.counterclockwise;
     this.left = attrs.centerX - attrs.radius;
     this.top = attrs.centerY - attrs.radius;
+	this.fill = attrs.fill;
 	// rest of constructor code here
 }
 Arc.inheritsFrom(Primitive);
@@ -256,6 +258,11 @@ Arc.prototype.draw = function (c) {
     }
 
     c.arc(this.centerX,this.centerY,this.radius, this.startingTheta, this.endingTheta, this.counterclockwise );
+	
+	if(this.fill!=""){
+		c.fillStyle = this.fill;
+		c.fill();
+	}
     c.stroke();
 };
 

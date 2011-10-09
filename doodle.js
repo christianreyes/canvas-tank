@@ -9,6 +9,7 @@ var y_pos = _canvas_height / 2;
 var _doodle = undefined;
 var _ground = undefined;
 var _truck_container = undefined;
+var _launcher = undefined;
 var _circle = undefined;
 var _arrow = undefined;
 var _arrow_container = undefined;
@@ -51,74 +52,77 @@ window.onload = function () {
 	
 	_truck_container = new Container({
 		width: 80,
-		height: 60,
+		height: 80,
 		left: 10,
-		top: _canvas_height - 50 - 60,
-		borderWidth: 1
+		top: _canvas_height - 50 - 80,
+		borderWidth: 0
 	});
 
 		
-	var launcherContainer = new Container({
-		top: 30,
+	_launcher = new Container({
+		top: 55,
 		left: 10,
 		width: 40,
-		height: 20,
+		height: 10,
 		theta: -Math.PI / 3,
+		fill: "#156100",
 		borderWidth: 1
 	});
 	
-	var rail = new Line({
-		startX: 10,
-		startY: 10,
-		endX: 20,
-		endY: 10
-	});
-	
-	launcherContainer.children = [rail];
-	
 	var wheel1 = new Arc({
         centerX: 11,
-        centerY: 52,
+        centerY: 72,
         lineWidth: 1,
         radius: 7,
+		fill: "#333",
         startingTheta: 0,
         endingTheta: Math.PI * 2
     });
 	
 	var wheel2 = new Arc({
         centerX: 28,
-        centerY: 52,
+        centerY: 72,
         lineWidth: 1,
         radius: 7,
+		fill: "#333",
         startingTheta: 0,
         endingTheta: Math.PI * 2
     });
 	
 	var wheel3 = new Arc({
         centerX: 68,
-        centerY: 52,
+        centerY: 72,
         lineWidth: 1,
+		fill: "#333",
         radius: 7,
         startingTheta: 0,
         endingTheta: Math.PI * 2
     });
 	
-	_truck_container.launcher = launcherContainer;
-	_truck_container.children = [launcherContainer, wheel1, wheel2, wheel3];
+	var body = new Container({
+        top: 60,
+		left:0,
+        height: 8,
+		width: 80,
+		fill: "#156100",
+        borderWidth: 1
+    });
+	
+	_truck_container.children = [wheel1, wheel2, wheel3, body, _launcher];
 	
 	_arrow_container = new Container({
-        width: 25,
-		height: 20,
+        width: 18,
+		height: 6,
 		left: 20,
 		top: _canvas_height - 50 - 30,
 		borderWidth: 0
 	});
 	
 	var shaft = new Line({
-		startX: 6,
-		startY: 10,
-		endX: 20,
-		endY: 10,
+		startX: 2,
+		startY: 3,
+		endX: 16,
+		endY: 3,
 		lineWidth: 1
 	});
 	
@@ -128,9 +132,9 @@ window.onload = function () {
         lineWidth: 1,
         type: "straight",
         points: [
-            { x: 20, y: 10 },
-            { x: 17, y: 7 },
-            { x: 17, y: 13 }
+            { x: 18, y: 3 },
+            { x: 15, y: 0 },
+            { x: 15, y: 6 }
             ]
     });
 	
@@ -139,9 +143,9 @@ window.onload = function () {
         lineWidth: 1,
         type: "straight",
         points: [
-            { x: 2, y: 8 },
-            { x: 6, y: 10 },
-            { x: 2, y: 12 }
+            { x: 0, y: 1 },
+            { x: 4, y: 3 },
+            { x: 0, y: 5 }
             ]
     });
 	
@@ -199,9 +203,9 @@ function fallingArrow(xPerSec, yPerSec) {
 		_arrow_container.theta = angToGround;
 
     } else {
-		_arrow_container.left = _truck_container.left + _truck_container.launcher.left; 
-		_arrow_container.top = _truck_container.top + _truck_container.launcher.top;
-		_arrow_container.theta = -1 * _truck_container.launcher.theta;
+		_arrow_container.left = _truck_container.left + _launcher.left; 
+		_arrow_container.top = _truck_container.top + _launcher.top;
+		_arrow_container.theta = -1 * _launcher.theta;
 	
 		_x_per_sec = _power * Math.cos(_arrow_container.theta);
         _y_per_sec = -1 * _power * Math.sin(_arrow_container.theta);
@@ -213,13 +217,13 @@ function fallingArrow(xPerSec, yPerSec) {
 function doKeyDown(evt){
   switch (evt.keyCode) {
     case 38:  /* Up arrow was pressed */
-		if( _truck_container.launcher.theta + Math.PI/2 > .2){
-			_truck_container.launcher.theta -= .1;
+		if( _launcher.theta + Math.PI/2 > .2){
+			_launcher.theta -= .1;
 		}
 		break;
     case 40:  /* Down arrow was pressed */
-		if( _truck_container.launcher.theta < -.1){
-			_truck_container.launcher.theta += .1
+		if( _launcher.theta < -.1){
+			_launcher.theta += .1
 		}
       break;
     case 37:  /* Left arrow was pressed */
