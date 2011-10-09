@@ -27,6 +27,9 @@ var _y_per_sec = -4;
 
 var _power = 5;
 
+var _fire = false;
+var _dirty = false;
+
 window.onload = function () {
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
@@ -68,7 +71,7 @@ window.onload = function () {
 		fill: "#156100",
 		borderWidth: 1
 	});
-	
+
 	var wheel1 = new Arc({
         centerX: 11,
         centerY: 72,
@@ -113,8 +116,9 @@ window.onload = function () {
 	_arrow_container = new Container({
         width: 18,
 		height: 6,
-		left: 20,
-		top: _canvas_height - 50 - 30,
+		left: _truck_container.left + _launcher.left,
+		top: _truck_container.top + _launcher.top,
+		theta: _launcher.theta,
 		borderWidth: 0
 	});
 	
@@ -169,8 +173,13 @@ function canvasMouseMove(canvas, event) {
 
 function updateAndDraw() {
 	//clearDirty([_truck_container, _arrow_container]);
-	_doodle.context.clearRect(0,0,_canvas_width, _canvas_height);
-	fallingArrow(_x_per_sec, _y_per_sec);
+	if(_dirty){
+		_doodle.context.clearRect(0,0,_canvas_width, _canvas_height);
+	}
+	
+	if(_fire){
+		fallingArrow();
+	}
 	
     _doodle.draw();
 }
@@ -187,8 +196,10 @@ function clearDirty(dirty){
 	}
 }
 
-function fallingArrow(xPerSec, yPerSec) {
+function fallingArrow() {
     if (_arrow_container.top < _canvas_height) {
+		_dirty = true;
+	
         _y_per_sec += _gravity_increment;
 		
 		var oldLeft = _arrow_container.left;
@@ -203,37 +214,66 @@ function fallingArrow(xPerSec, yPerSec) {
 		_arrow_container.theta = angToGround;
 
     } else {
+		_fire = false;
+		_dirty = true;
 		_arrow_container.left = _truck_container.left + _launcher.left; 
 		_arrow_container.top = _truck_container.top + _launcher.top;
-		_arrow_container.theta = -1 * _launcher.theta;
-	
-		_x_per_sec = _power * Math.cos(_arrow_container.theta);
-        _y_per_sec = -1 * _power * Math.sin(_arrow_container.theta);
+		_arrow_container.theta = _launcher.theta;
+		
+		_x_per_sec = _power * Math.cos(-1 *_arrow_container.theta);
+        _y_per_sec = -1 * _power * Math.sin(-1 * _arrow_container.theta);
     }
 }
 
 //http://html5.litten.com/moving-shapes-on-the-html5-canvas-with-the-keyboard/
+//http://www.cambiaresearch.com/c4/702b8cd1-e5b0-42e6-83ac-25f0306e3e25/javascript-char-codes-key-codes.aspx
 
 function doKeyDown(evt){
   switch (evt.keyCode) {
     case 38:  /* Up arrow was pressed */
 		if( _launcher.theta + Math.PI/2 > .2){
+			_dirty = true;
 			_launcher.theta -= .1;
+			if(!_fire) {
+				_arrow_container.theta = _launcher.theta;
+				_x_per_sec = _power * Math.cos(-1 * _arrow_container.theta);
+				_y_per_sec = -1 * _power * Math.sin(-1 *_arrow_container.theta);
+			}
 		}
 		break;
     case 40:  /* Down arrow was pressed */
 		if( _launcher.theta < -.1){
+			_dirty = true;
 			_launcher.theta += .1
+			if(!_fire){
+				_arrow_container.theta = _launcher.theta;
+				_x_per_sec = _power * Math.cos(-1 * _arrow_container.theta);
+				_y_per_sec = -1 * _power * Math.sin(-1 * _arrow_container.theta);
+			}
 		}
       break;
     case 37:  /* Left arrow was pressed */
 		if(_truck_container.left > 5){
+			_dirty = true;
 			_truck_container.left -= 3;
+			if(!_fire) {
+				_arrow_container.left = _truck_container.left + _launcher.left; 
+			}
 		}
 		break;
     case 39:  /* Right arrow was pressed */
 		if(_canvas_width - _truck_container.left + _truck_container.width > 5){
+			_dirty = true;
 			_truck_container.left += 3;
+			if(!_fire) {
+				_arrow_container.left = _truck_container.left + _launcher.left; 
+			}
+		}      
+		break;
+	case 32:  /* Space bar was pressed */
+		if(!_fire){
+			_fire = true;
+			_dirty = true;
 		}      
 		break;
   }
