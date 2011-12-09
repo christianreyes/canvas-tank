@@ -186,27 +186,22 @@ Path.prototype.draw = function (c) {
 		if(this.fill != ""){
 			c.fillStyle = this.fill;
 		}
+		
+		for(var i=1;i<this.points.length;i++){
+			var p = this.points[i];
 
 		//c.lineCap = "r";
-		switch(this.type){
-			case "straight":
-				for(var i=1;i<this.points.length;i++){
-					var p = this.points[i];
+			switch(this.type){
+				case "straight":
 					c.lineTo(p.x, p.y);
-				}
-				break;
-			case "quadratic":
-				for(var i=1;i<this.points.length;i++){
-					var p = this.points[i];
+					break;
+				case "quadratic":
 					c.quadraticCurveTo(p.cp1x, p.cp1y, p.x, p.y);
-				}
-				break;
-			case "bezier":
-				for(var i=1;i<this.points.length;i++){
-					var p = this.points[i];
+					break;
+				case "bezier":
 					c.bezierCurveTo(p.cp1x, p.cp1y, p.cp2x, p.cp2y, p.x, p.y);
-				}
-				break;
+					break;
+			}
 		}
 		
 		if(this.fill != ""){

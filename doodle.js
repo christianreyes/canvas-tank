@@ -19,7 +19,7 @@ var _canvas_height = 500;
 var _doodle = undefined;
 var _ground = undefined;
 var _truck_container = undefined;
-var _arrow_container = undefined;
+var _arrows = []; 
 
 // contains the balloons flying across the screen
 var _balloons = [];
@@ -33,7 +33,9 @@ var _gravity = 5;
 var _gravity_increment = _gravity * _time_s_to_ms;
 
 // magnitude of the shot in px per sec
-var _power = 6.75;
+var _power = 8;
+
+var _kill_radius = 12;
 
 // _fire true means the arrow is flying in the air and another can't be fired
 // _fire false means that another arrow can be fired
@@ -43,8 +45,10 @@ var _fire = false;
 var _score = undefined;
 
 // upper and lower bounds for the xVelocity of the balloons
-var _balloon_min_x = .25;
-var _balloon_max_x = 1.75;
+var _balloon_min_x = 1;
+var _balloon_max_x = 3;
+
+var _arrow_degree_vary = .1;
 
 window.onload = function () {
     var canvas = document.getElementById("canvas");
@@ -126,50 +130,6 @@ window.onload = function () {
 	
 	_truck_container.children = [wheel1, wheel2, wheel3, body, _launcher];
 	
-	_arrow_container = new Container({
-        width: 18,
-		height: 6,
-		left: _truck_container.left + _launcher.left,
-		top: _truck_container.top + _launcher.top,
-		theta: _launcher.theta,
-		borderWidth: 0,
-		xVelocity: 3,
-		yVelocity: -4
-	});
-	
-	var shaft = new Line({
-		startX: 2,
-		startY: 3,
-		endX: 16,
-		endY: 3,
-		lineWidth: 1
-	});
-	
-    var point = new Path({
-        color: "black",
-		fill: "black",
-        lineWidth: 1,
-        type: "straight",
-        points: [
-            { x: 18, y: 3 },
-            { x: 15, y: 0 },
-            { x: 15, y: 6 }
-            ]
-    });
-	
-	var end = new Path({
-        color: "black",
-        lineWidth: 1,
-        type: "straight",
-        points: [
-            { x: 0, y: 1 },
-            { x: 4, y: 3 },
-            { x: 0, y: 5 }
-            ]
-    });
-	
-	_arrow_container.children = [end, shaft, point];
-	
 	var scoreText = new Text({
 		left: 20, 
 		height: 40, 
@@ -182,15 +142,15 @@ window.onload = function () {
 		content: "0" 
 	});
 
-    _doodle.children = [ scoreText, _score, _arrow_container, _ground, _truck_container];
+    _doodle.children = [ scoreText, _score, _ground, _truck_container];
 
     _doodle.draw();
 
 	// track the keys pressed
 	window.addEventListener('keydown',doKeyDown,true);
 
-	// create balloons every 2 seconds
-	setInterval(createBalloons, 2000);
+	// create balloons every 1.75 seconds
+	setInterval(createBalloons, 1750);
 	
 	// draw the frame every _time_step ms
     setInterval(updateAndDraw, _time_step);
@@ -230,71 +190,81 @@ function moveBalloons(){
 		// move the balloon left
 		balloonC.left -= balloonC.xVelocity;
 		
-		// if the arrow is 12 px or less close to the balloon. Make the balloon dissapear and add 1 to the score
-		if( Math.abs(balloonC.left - _arrow_container.left) <= 12 && Math.abs(balloonC.top - _arrow_container.top) <= 12){
+		// if the balloon is off the screen make it disappear
+		if(balloonC.left + 15 < 0){
 			// remove balloon from objects to be drawn and objects to be moved
 			_balloons.splice(b,1);
 			for(var i =0;i<_doodle.children.length;i++){
 				if(_doodle.children[i] == balloonC){
 					_doodle.children.splice(i,1);
-					// increase the score by one
-					_score.content = parseInt(_score.content,10) + 1;
-				}
-			}
-		} else {		
-			// if the balloon is off the screen make it disappear
-			if(balloonC.left + 15 < 0){
-				// remove balloon from objects to be drawn and objects to be moved
-				_balloons.splice(b,1);
-				for(var i =0;i<_doodle.children.length;i++){
-					if(_doodle.children[i] == balloonC){
-						_doodle.children.splice(i,1);
-					}
 				}
 			}
 		}
 	}
 }
 
+function killBalloons(){
+	// if the arrow is 15 px or less close to the balloon. Make the balloon dissapear and add 1 to the score
+	for(var b=0;b<_balloons.length;b++){
+		var balloon = _balloons[b];
+		
+		for(var a=0;a<_arrows.length;a++){
+			var arrow=_arrows[a];
+			
+			if( Math.abs(balloon.left - arrow.left) <= _kill_radius && Math.abs(balloon.top - arrow.top) <= _kill_radius){
+					// remove balloon from objects to be drawn and objects to be moved
+					_balloons.splice(b,1);
+					for(var i =0;i<_doodle.children.length;i++){
+						if(_doodle.children[i] == balloon){
+							_doodle.children.splice(i,1);
+							// increase the score by one
+							_score.content = parseInt(_score.content,10) + 1;
+						}
+					}
+			} 
+		}
+	}
+}
+
 function updateAndDraw() {
 	_doodle.context.clearRect(0,0,_canvas_width, _canvas_height - 50);
-	moveBalloons();
 	
-	// if the is flying, draw it
-	if(_fire){
-		fallingArrow();
-	}
+	killBalloons();
+	moveBalloons();
+	moveArrows();
 	
 	// update the canvas
     _doodle.draw();
 }
 
-function fallingArrow() {
+function moveArrows() {
 	// if the arrow is in the canvas, move it
-    if (_arrow_container.top < _canvas_height && _arrow_container.left < _canvas_width) {	
-        _arrow_container.yVelocity += _gravity_increment;
-		
-		var oldLeft = _arrow_container.left;
-		var oldTop = _arrow_container.top;
-		var newLeft = oldLeft + _arrow_container.xVelocity;
-		var newTop = oldTop + _arrow_container.yVelocity;
-		
-		var angToGround = Math.atan( (newTop - oldTop ) / (newLeft - oldLeft) );
-		
-		_arrow_container.left += _arrow_container.xVelocity; 
-		_arrow_container.top += _arrow_container.yVelocity;
-		_arrow_container.theta = angToGround;
+	for(var i=0;i<_arrows.length;i++){
+		var arrow = _arrows[i];
+		if (arrow.top < _canvas_height && arrow.left < _canvas_width) {	
+			arrow.yVelocity += _gravity_increment;
+			
+			var oldLeft = arrow.left;
+			var oldTop = arrow.top;
+			var newLeft = oldLeft + arrow.xVelocity;
+			var newTop = oldTop + arrow.yVelocity;
+			
+			var angToGround = Math.atan( (newTop - oldTop ) / (newLeft - oldLeft) );
+			
+			arrow.left += arrow.xVelocity; 
+			arrow.top += arrow.yVelocity;
+			arrow.theta = angToGround;
 
-    } else {
-		// if the arrow is out of the canvas, "load" it to be fired
-		_fire = false;
-		_arrow_container.left = _truck_container.left + _launcher.left; 
-		_arrow_container.top = _truck_container.top + _launcher.top;
-		_arrow_container.theta = _launcher.theta;
-		
-		_arrow_container.xVelocity = _power * Math.cos(-1 *_arrow_container.theta);
-        _arrow_container.yVelocity = -1 * _power * Math.sin(-1 * _arrow_container.theta);
-    }
+		} else {
+			// if the arrow is out of the canvas, kill it
+			_arrows.splice(i,1);
+			for(var j =0;j<_doodle.children.length;j++){
+				if(_doodle.children[j] == arrow){
+					_doodle.children.splice(j,1);
+				}
+			}
+		}
+	}
 }
 
 //http://html5.litten.com/moving-shapes-on-the-html5-canvas-with-the-keyboard/
@@ -305,7 +275,7 @@ function doKeyDown(evt){
     case 38:  /* Up arrow was pressed. move the arrow and launcher accordingly */
 		if( _launcher.theta + Math.PI/2 > .2){
 			_dirty = true;
-			_launcher.theta -= .1;
+			_launcher.theta -= .05;
 			// don't change the arrow if it's currently flying
 			if(!_fire) {
 				_arrow_container.theta = _launcher.theta;
@@ -315,8 +285,8 @@ function doKeyDown(evt){
 		}
 		break;
     case 40:  /* Down arrow was pressed. move the arrow and launcher accordingly */
-		if( _launcher.theta < -.1){
-			_launcher.theta += .1
+		if( _launcher.theta < -.05){
+			_launcher.theta += .05
 			if(!_fire){
 				_arrow_container.theta = _launcher.theta;
 				_arrow_container.xVelocity = _power * Math.cos(-1 * _arrow_container.theta);
@@ -340,10 +310,57 @@ function doKeyDown(evt){
 			}
 		}      
 		break;
-	case 32:  /* Space bar was pressed */
-		if(!_fire){
-			_fire = true;
-		}      
+	case 32:  /* Space bar was pressed. Launch an arrow */
+		createArrow();
 		break;
   }
+}
+
+function createArrow(){
+	var arrow_container = new Container({
+        width: 18,
+		height: 6,
+		left: _truck_container.left + _launcher.left,
+		top: _truck_container.top + _launcher.top,
+		theta: _launcher.theta + Math.random() * _arrow_degree_vary,
+		borderWidth: 0,
+		xVelocity: _power * Math.cos(-1 * (_launcher.theta + Math.random() * _arrow_degree_vary)),
+		yVelocity: -1 * _power * Math.sin(-1 * (_launcher.theta+ Math.random() * _arrow_degree_vary))
+	});
+	
+	var shaft = new Line({
+		startX: 2,
+		startY: 3,
+		endX: 16,
+		endY: 3,
+		lineWidth: 1
+	});
+	
+    var point = new Path({
+        color: "black",
+		fill: "black",
+        lineWidth: 1,
+        type: "straight",
+        points: [
+            { x: 18, y: 3 },
+            { x: 15, y: 0 },
+            { x: 15, y: 6 }
+            ]
+    });
+	
+	var end = new Path({
+        color: "black",
+        lineWidth: 1,
+        type: "straight",
+        points: [
+            { x: 0, y: 1 },
+            { x: 4, y: 3 },
+            { x: 0, y: 5 }
+            ]
+    });
+	
+	arrow_container.children = [end, shaft, point];
+	
+	_arrows.push(arrow_container);
+	_doodle.children.push(arrow_container);
 }
